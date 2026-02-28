@@ -1,0 +1,55 @@
+# Python virtual environments
+.venv/
+.venv-1/
+venv/
+env/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.egg-info/
+dist/
+build/
+.eggs/
+*.egg
+
+# Python cache & test artifacts
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+htmlcov/
+.coverage
+*.cover
+
+# Node / npm
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Vite build output
+project/dist/
+project/.vite/
+
+# Environment files — never commit secrets
+.env
+.env.local
+.env.*.local
+backend/vision-agents/.env
+
+# OS artifacts
+.DS_Store
+Thumbs.db
+
+# VS Code workspace settings (optional — keep if you want)
+# .vscode/
+
+# uv lock artifacts (keep uv.lock in source control, but not caches)
+.uv-cache/
+
+# YOLO model weights (large binaries — download separately)
+*.pt
+*.onnx
+
+# Logs
+*.log
