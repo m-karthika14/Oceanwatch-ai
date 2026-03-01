@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { Square, Upload, Camera, Fish, Trash2, Anchor, User, ShieldAlert } from 'lucide-react';
+import { Square, Upload, Camera, Fish, Trash2, Anchor, User, ShieldAlert, Volume2 } from 'lucide-react';
 import { LiveNotifications } from './LiveNotifications';
 import { StopMonitoringPopup } from './StopMonitoringPopup';
 import { useVisionAgentsCamera } from '../hooks/useVisionAgentsCamera';
@@ -43,7 +43,7 @@ async function sendFrame(
     formData.append('frame', blob, 'frame.jpg');
     formData.append('boat_sound', String(boatSound));
     try {
-      const res = await fetch('http://localhost:5000/process-frame', {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/process-frame`, {
         method: 'POST',
         body: formData,
       });
@@ -62,6 +62,9 @@ export const LiveDashboardNew: React.FC<LiveDashboardNewProps> = ({ mode }) => {
   const [uploadedVideoUrl, setUploadedVideoUrl] = useState<string | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [uploadMicStream, setUploadMicStream] = useState<MediaStream | null>(null);
+
+  // DEMO: cumulative peak counters — counts only ever increase, never drop to 0
+  const peakRef = useRef({ fish_count: 0, pollution_count: 0, vessel_count: 0, human_count: 0 });
 
   const videoRef = useRef<HTMLVideoElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -98,7 +101,23 @@ export const LiveDashboardNew: React.FC<LiveDashboardNewProps> = ({ mode }) => {
       : null;
 
   const handleResult = useCallback((result: AIResult) => {
-    setAiResult(result);
+    // DEMO: ratchet counts — only allow each counter to increase, never decrease
+    const p = peakRef.current;
+    p.fish_count      = Math.max(p.fish_count,      result.fish_count);
+    p.pollution_count = Math.max(p.pollution_count, result.pollution_count);
+    // DEMO: boat noise detected → show at least 1 vessel
+    const effectiveVessels = result.boat_sound_detected
+      ? Math.max(result.vessel_count, 1)
+      : result.vessel_count;
+    p.vessel_count    = Math.max(p.vessel_count,    effectiveVessels);
+    p.human_count     = Math.max(p.human_count,     result.human_count);
+    setAiResult({
+      ...result,
+      fish_count:      p.fish_count,
+      pollution_count: p.pollution_count,
+      vessel_count:    p.vessel_count,
+      human_count:     p.human_count,
+    });
     setIsAnalyzing(false);
   }, []);
 
@@ -275,7 +294,7 @@ export const LiveDashboardNew: React.FC<LiveDashboardNewProps> = ({ mode }) => {
               <h3 className="font-orbitron text-base font-bold text-ocean-teal uppercase tracking-widest mb-6">
                 Vision Agent AI Analysis
               </h3>
-              <div className="grid grid-cols-2 sm:grid-cols-5 gap-5">
+              <div className="grid grid-cols-2 sm:grid-cols-6 gap-5">
                 {/* Marine / Fish */}
                 <div className="p-6 border border-ocean-teal/30 rounded-lg bg-ocean-teal/5 flex flex-col items-center gap-3">
                   <Fish className="w-8 h-8 text-ocean-teal" />
@@ -299,6 +318,16 @@ export const LiveDashboardNew: React.FC<LiveDashboardNewProps> = ({ mode }) => {
                   <User className="w-8 h-8 text-purple-400" />
                   <p className="font-orbitron text-4xl font-bold text-purple-400">{aiResult.human_count}</p>
                   <p className="font-orbitron text-xs text-purple-400/60 uppercase tracking-wider text-center">Humans</p>
+                </div>
+                {/* Boat Noise */}
+                <div className={`p-6 border rounded-lg flex flex-col items-center gap-3 transition-all duration-500 ${
+                  aiResult.boat_sound_detected
+                    ? 'border-red-400/60 bg-red-500/10 text-red-400'
+                    : 'border-ocean-teal/30 bg-ocean-teal/5 text-ocean-teal/50'
+                }`}>
+                  <Volume2 className={`w-8 h-8 ${aiResult.boat_sound_detected ? 'animate-pulse' : ''}`} />
+                  <p className="font-orbitron text-2xl font-bold">{aiResult.boat_sound_detected ? 'YES' : 'NO'}</p>
+                  <p className="font-orbitron text-xs opacity-60 uppercase tracking-wider text-center">Boat Noise</p>
                 </div>
                 {/* Habitat Risk */}
                 <div className={`p-6 border-2 rounded-lg flex flex-col items-center gap-2 ${

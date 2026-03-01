@@ -52,7 +52,7 @@ async function sendAudioChunk(blob: Blob): Promise<boolean> {
     const formData = new FormData();
     formData.append('audio', blob, 'chunk.wav');
     console.log(`[AudioDetection] POST /process-audio — ${blob.size}B WAV`);
-    const res = await fetch('http://localhost:5000/process-audio', {
+    const res = await fetch(`${import.meta.env.VITE_API_URL}/process-audio`, {
       method: 'POST',
       body: formData,
     });
@@ -80,6 +80,9 @@ export function useAudioDetection(
   const bufferRef     = useRef<Float32Array[]>([]);
   const intervalRef   = useRef<ReturnType<typeof setInterval> | null>(null);
   const sampleRateRef = useRef<number>(44100);
+  // Hold the "true" state for 3 s after last positive detection
+  const holdTimerRef  = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const HOLD_MS = 3000;
 
   useEffect(() => {
     if (!enabled || !stream) return;
@@ -129,12 +132,21 @@ export function useAudioDetection(
       const wav = encodeWAV(merged, sampleRateRef.current);
       console.log(`[AudioDetection] Chunk ready — ${merged.length} samples → ${wav.size}B WAV`);
       const detected = await sendAudioChunk(wav);
-      setBoatSoundDetected(detected);
+      if (detected) {
+        // Positive hit — set true and reset the hold timer
+        setBoatSoundDetected(true);
+        if (holdTimerRef.current) clearTimeout(holdTimerRef.current);
+        holdTimerRef.current = setTimeout(() => {
+          setBoatSoundDetected(false);
+        }, HOLD_MS);
+      }
+      // If not detected, do nothing — the hold timer will clear it after HOLD_MS
     }, CHUNK_DURATION_MS);
 
     return () => {
       console.log('[AudioDetection] Cleanup — stopping AudioContext and processor');
       if (intervalRef.current) clearInterval(intervalRef.current);
+      if (holdTimerRef.current) clearTimeout(holdTimerRef.current);
       processor.disconnect();
       source.disconnect();
       ctx.close();

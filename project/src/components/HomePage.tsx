@@ -4,16 +4,19 @@ import React from 'react';
 interface HomePageProps {
   onStartMonitoring: () => void;
   onHowToUse: () => void;
+  onLearningImpact: () => void;
 }
 
-export const HomePage: React.FC<HomePageProps> = ({ onStartMonitoring, onHowToUse }) => {
+export const HomePage: React.FC<HomePageProps> = ({ onStartMonitoring, onHowToUse, onLearningImpact }) => {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center relative overflow-hidden">
       <div className="relative z-10 text-center max-w-2xl px-8">
   {/* waves icon removed */}
         <h1
-          className="font-orbitron font-black text-5xl md:text-7xl text-ocean-text mb-6 tracking-wider uppercase whitespace-nowrap"
+          className="font-orbitron font-black text-5xl md:text-7xl text-ocean-text mb-6 tracking-wider uppercase whitespace-nowrap cursor-pointer hover:opacity-80 transition-opacity duration-300 select-none"
           style={{ transform: 'translateX(-1cm)' }}
+          onClick={onLearningImpact}
+          title="Learning & Impact"
         >
           OceanWatch&nbsp;<span className="text-ocean-teal">AI</span>
         </h1>

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { AlertTriangle, Info, AlertCircle, Zap, CheckCircle } from 'lucide-react';
+import { AlertTriangle, Info, AlertCircle, Zap, CheckCircle, Volume2 } from 'lucide-react';
 
 interface Notification {
   id: string;
@@ -17,6 +17,7 @@ interface AIResult {
   water_turbidity: string;
   risk_score: number;
   habitat_condition: string;
+  boat_sound_detected: boolean;
 }
 
 interface LiveNotificationsProps {
@@ -58,7 +59,13 @@ export const LiveNotifications: React.FC<LiveNotificationsProps> = ({ aiResult }
     const timestamp = new Date().toLocaleTimeString();
     const newEntries: Notification[] = [];
 
-    const { fish_count, pollution_count, vessel_count, human_count, water_turbidity, risk_score, habitat_condition } = aiResult;
+    const { fish_count, pollution_count, vessel_count, human_count, water_turbidity, risk_score, habitat_condition, boat_sound_detected } = aiResult;
+
+    // Boat noise
+    newEntries.push(boat_sound_detected
+      ? { id: `${Date.now()}-boat`, type: 'danger',  message: 'Boat engine noise detected — acoustic disturbance present', timestamp, icon: <Volume2 className="w-5 h-5" /> }
+      : { id: `${Date.now()}-boat`, type: 'success', message: 'No boat noise detected', timestamp, icon: <CheckCircle className="w-5 h-5" /> }
+    );
 
     // Fish
     newEntries.push(fish_count > 0

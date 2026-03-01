@@ -18,7 +18,7 @@ export const HowToUsePage: React.FC<HowToUsePageProps> = ({ onBack }) => {
       <div className="relative">
         <div className="h-screen relative overflow-hidden flex items-center justify-center">
           <img
-            src="https://images.pexels.com/photos/2398220/pexels-photo-2398220.jpeg?auto=compress&cs=tinysrgb&w=1200"
+            src="https://i.postimg.cc/sg7BQCK8/hiroko-yoshii-9y7y26C-l4Y-unsplash.jpg"
             alt="Ocean overview"
             className="absolute inset-0 w-full h-full object-cover opacity-40"
           />
@@ -29,9 +29,25 @@ export const HowToUsePage: React.FC<HowToUsePageProps> = ({ onBack }) => {
               How OceanWatch
               <span className="block text-ocean-teal">AI Works</span>
             </h1>
-            <p className="font-inter text-xl text-ocean-text/80 max-w-2xl mx-auto">
+            <p className="font-inter text-xl text-ocean-text/80 max-w-2xl mx-auto mb-8">
               Protecting marine ecosystems with advanced AI surveillance
             </p>
+
+            {/* Vision Agents banner */}
+            <div className="inline-flex flex-col items-center gap-3 px-8 py-5 rounded-2xl border border-blue-400/40 bg-gradient-to-r from-blue-900/60 via-blue-800/50 to-cyan-900/60 backdrop-blur-md shadow-lg max-w-xl mx-auto">
+              <div className="flex items-center gap-2">
+                <span className="text-blue-300 text-lg"></span>
+                <span className="font-orbitron text-sm font-bold text-blue-200 uppercase tracking-widest">
+                  Built with Vision Agents
+                </span>
+                <span className="text-blue-300 text-lg"></span>
+              </div>
+              <p className="font-inter text-sm text-blue-100/80 leading-relaxed text-center">
+                OceanWatch AI would not be possible without{' '}
+                <span className="font-bold text-blue-300">Vision Agents</span> — the AI framework powering
+                real-time marine detection, audio analysis, and risk scoring at every frame.
+              </p>
+            </div>
           </div>
         </div>
 
@@ -39,8 +55,7 @@ export const HowToUsePage: React.FC<HowToUsePageProps> = ({ onBack }) => {
           <div className="max-w-6xl mx-auto grid md:grid-cols-2 gap-12 items-center mb-20">
             <div>
               <img
-                src="https://images.pexels.com/photos/2398220/pexels-photo-2398220.jpeg?auto=compress&cs=tinysrgb&w=1200"
-                alt="Coral reef"
+                src="https://i.postimg.cc/jS95RzmL/woman-bottom-professional-body-adult-(1).jpg"
                 className="rounded-lg overflow-hidden border-2 border-ocean-teal/50 shadow-glow"
               />
             </div>
@@ -61,7 +76,7 @@ export const HowToUsePage: React.FC<HowToUsePageProps> = ({ onBack }) => {
             <div className="max-w-6xl mx-auto grid md:grid-cols-2 gap-12 items-center mb-20 md:flex-row-reverse">
               <div className="md:order-2">
                 <img
-                  src="https://images.pexels.com/photos/2398220/pexels-photo-2398220.jpeg?auto=compress&cs=tinysrgb&w=1200"
+                  src="https://i.postimg.cc/YqvBMJH4/octopus-seen-its-underwater-natural-habitat.jpg"
                   alt="Marine life detection"
                   className="rounded-lg overflow-hidden border-2 border-ocean-teal/50 shadow-glow"
                 />
@@ -72,7 +87,7 @@ export const HowToUsePage: React.FC<HowToUsePageProps> = ({ onBack }) => {
                   <div>
                     <h2 className="font-orbitron text-2xl font-bold text-ocean-text mb-3 uppercase">Step 2: Live Detection</h2>
                     <p className="font-inter text-ocean-text/80">
-                      Advanced AI algorithms analyze the footage in real-time, identifying marine species, tracking movements, and detecting environmental threats instantly.
+                      Advanced AI algorithms analyze the footage in real-time, tracking movements, and detecting environmental threats instantly.
                     </p>
                   </div>
                 </div>
@@ -83,7 +98,7 @@ export const HowToUsePage: React.FC<HowToUsePageProps> = ({ onBack }) => {
           <div className="max-w-6xl mx-auto grid md:grid-cols-2 gap-12 items-center mb-20">
             <div>
               <img
-                src="https://images.pexels.com/photos/2398220/pexels-photo-2398220.jpeg?auto=compress&cs=tinysrgb&w=1200"
+                src="https://i.postimg.cc/3w7q4qsQ/ocean-pollution-plastics-jpg.webp"
                 alt="Threat detection"
                 className="rounded-lg overflow-hidden border-2 border-ocean-warning/50 shadow-yellow"
               />
@@ -94,7 +109,7 @@ export const HowToUsePage: React.FC<HowToUsePageProps> = ({ onBack }) => {
                 <div>
                   <h2 className="font-orbitron text-2xl font-bold text-ocean-text mb-3 uppercase">Step 3: Threat Assessment</h2>
                   <p className="font-inter text-ocean-text/80">
-                    Automatically detects threats including plastic waste, fishing nets, boat disturbances, and human presence that endanger marine life.
+                    Automatically detects threats including plastic waste, boat disturbances, and human presence that endanger marine life.
                   </p>
                 </div>
               </div>
@@ -105,7 +120,7 @@ export const HowToUsePage: React.FC<HowToUsePageProps> = ({ onBack }) => {
             <div className="max-w-6xl mx-auto grid md:grid-cols-2 gap-12 items-center md:flex-row-reverse">
               <div className="md:order-2">
                 <img
-                  src="https://images.pexels.com/photos/2398220/pexels-photo-2398220.jpeg?auto=compress&cs=tinysrgb&w=1200"
+                  src="https://i.postimg.cc/TwKBfb8R/pexels-rompalliharish-1698618.jpg"
                   alt="Real-time alerts"
                   className="rounded-lg overflow-hidden border-2 border-ocean-danger/50 shadow-glow-red"
                 />

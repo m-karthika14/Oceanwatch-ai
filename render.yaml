@@ -1,0 +1,28 @@
+services:
+  # ── Node.js Express bridge ──────────────────────────────────────────────────
+  - type: web
+    name: oceanwatch-node
+    runtime: node
+    rootDir: backend
+    buildCommand: npm install
+    startCommand: node server.js
+    envVars:
+      - key: PORT
+        value: 10000
+      - key: PYTHON_API_URL
+        fromService:
+          type: web
+          name: oceanwatch-python
+          property: host
+          format: https://{host}
+
+  # ── Python FastAPI ──────────────────────────────────────────────────────────
+  - type: web
+    name: oceanwatch-python
+    runtime: python
+    rootDir: backend/vision-agents
+    buildCommand: pip install fastapi uvicorn ultralytics numpy scipy
+    startCommand: uvicorn api:app --host 0.0.0.0 --port 10000
+    envVars:
+      - key: PORT
+        value: 10000

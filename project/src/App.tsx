@@ -4,8 +4,9 @@ import { HowToUsePage } from './components/HowToUsePage';
 import { ModeSelectionScreen } from './components/ModeSelectionScreen';
 import { LiveDashboardNew } from './components/LiveDashboardNew';
 import { OceanBackground } from './components/OceanBackground';
+import { LearningImpactPage } from './components/LearningImpactPage';
 
-type AppView = 'home' | 'howto' | 'mode' | 'dashboard';
+type AppView = 'home' | 'howto' | 'mode' | 'dashboard' | 'impact';
 
 function App() {
   const [currentView, setCurrentView] = useState<AppView>('home');
@@ -32,10 +33,13 @@ function App() {
         <HomePage
           onStartMonitoring={handleStartMonitoring}
           onHowToUse={() => setCurrentView('howto')}
+          onLearningImpact={() => setCurrentView('impact')}
         />
       )}
 
       {currentView === 'howto' && <HowToUsePage onBack={handleBack} />}
+
+      {currentView === 'impact' && <LearningImpactPage onBack={handleBack} />}
 
       {currentView === 'mode' && (
         <div className="min-h-screen flex items-center justify-center">

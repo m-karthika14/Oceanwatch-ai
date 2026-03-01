@@ -6,8 +6,8 @@ const FormData = require('form-data');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
-const PYTHON_AGENT_URL  = 'http://localhost:8000/analyze-frame';
-const PYTHON_AUDIO_URL  = 'http://localhost:8000/analyze-audio';
+const PYTHON_AGENT_URL  = `${process.env.PYTHON_API_URL || 'http://localhost:8000'}/analyze-frame`;
+const PYTHON_AUDIO_URL  = `${process.env.PYTHON_API_URL || 'http://localhost:8000'}/analyze-audio`;
 
 // ── Minimal timestamped logger ─────────────────────────────────────────────────
 const ts   = () => new Date().toISOString();

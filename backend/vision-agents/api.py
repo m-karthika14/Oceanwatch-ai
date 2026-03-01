@@ -70,64 +70,64 @@ VESSEL_CLASSES = ["boat", "ship"]
 
 def get_action_insight(risk_score: int) -> str:
     stable = [
-        "Marine conditions appear stable.",
-        "Habitat remains balanced — reduce monitoring pressure.",
-        "Environmental stability detected.",
-        "No immediate ecosystem stress observed.",
-        "Marine environment appears safe.",
-        "Natural balance maintained.",
-        "Minimal external disturbance present.",
-        "Ecosystem remains within safe limits.",
-        "Habitat conditions are steady.",
-        "Monitoring indicates stability.",
+        "Maintain routine surveillance — log today's baseline readings.",
+        "Share this stable status with the conservation database.",
+        "Use this calm window to calibrate sensor thresholds.",
+        "Continue passive monitoring and archive footage for trend analysis.",
+        "No action required — sustain current monitoring schedule.",
+        "Document species sightings to build a healthy habitat record.",
+        "Review previous alerts and confirm all past issues are resolved.",
+        "Run a quick equipment check while conditions are favourable.",
+        "Brief the team: zone is stable, keep standard watch intervals.",
+        "Update the habitat health log with today's clean reading.",
     ]
     mild = [
-        "Early environmental disturbance detected.",
-        "Minor ecosystem imbalance emerging.",
-        "Slight environmental stress present.",
-        "Initial disruption observed.",
-        "Habitat stability may be shifting.",
-        "Preventive observation recommended.",
-        "Low-level stress indicators present.",
-        "Subtle changes in habitat detected.",
-        "Environmental pressure beginning.",
-        "Mild disturbance observed.",
+        "Increase monitoring frequency — check again in 30 seconds.",
+        "Identify the disturbance source and note its GPS location.",
+        "Alert the on-call marine biologist with current readings.",
+        "Prepare the cleanup kit in case the situation escalates.",
+        "Reduce nearby vessel speed and noise to avoid worsening stress.",
+        "Collect a water sample now and flag for lab analysis.",
+        "Expand the camera field of view to track the disturbance area.",
+        "Log the anomaly with a timestamp for trend comparison.",
+        "Notify the patrol team to increase passes in this zone.",
+        "Review the last 5 minutes of footage to pinpoint the trigger.",
     ]
     moderate = [
-        "Moderate ecosystem stress observed.",
-        "Marine conditions may require mitigation.",
-        "Habitat balance appears affected.",
-        "Environmental pressure increasing.",
-        "Marine presence interacting with external factors.",
-        "Stability may be declining.",
-        "Activity limitation advised.",
-        "Potential disruption detected.",
-        "Adaptive monitoring recommended.",
-        "Environmental strain observed.",
+        "Deploy a response team to investigate the affected zone.",
+        "Issue a no-fishing advisory for this area immediately.",
+        "Collect water and sediment samples for contamination testing.",
+        "Restrict vessel access within 500 m of the disturbance point.",
+        "Notify the regional marine authority and file an incident report.",
+        "Activate the pollution containment protocol if debris is present.",
+        "Brief dive team to assess habitat damage underwater.",
+        "Increase drone patrol coverage over the affected sector.",
+        "Coordinate with local fisheries to impose a temporary catch ban.",
+        "Share real-time data with partner conservation organisations.",
     ]
     high = [
-        "High environmental pressure detected.",
-        "Marine life may be affected.",
-        "Disturbance impact is significant.",
-        "Habitat stability compromised.",
-        "External stressors present.",
-        "Marine disturbance escalating.",
-        "Environmental instability rising.",
-        "Active mitigation may be required.",
-        "Habitat integrity at risk.",
-        "Marine ecosystem affected.",
+        "Escalate to senior conservation officer — immediate action needed.",
+        "Enforce a full vessel exclusion zone around the affected area.",
+        "Deploy emergency oil-spill or debris containment booms now.",
+        "Alert coast guard and request patrol boat assistance.",
+        "Begin emergency species relocation if marine life is threatened.",
+        "Shut down all nearby industrial or construction activity.",
+        "Issue a public advisory to avoid the coastline in this zone.",
+        "Activate the emergency response protocol and assemble the task force.",
+        "Stream live footage to the incident command centre.",
+        "File an urgent report with timestamps, counts, and GPS coordinates.",
     ]
     critical = [
-        "Critical habitat stress detected.",
-        "Immediate intervention may be necessary.",
-        "Marine ecosystem integrity compromised.",
-        "Urgent action required.",
-        "Severe environmental pressure present.",
-        "Habitat collapse possible.",
-        "Rapid response advised.",
-        "Marine risk at peak level.",
-        "Critical environmental instability.",
-        "Immediate mitigation required.",
+        "CRITICAL — contact coast guard and marine emergency services NOW.",
+        "Initiate full habitat evacuation protocol for vulnerable species.",
+        "Deploy all available containment resources to the zone immediately.",
+        "Lock down the area — prohibit all human access until cleared.",
+        "Broadcast an emergency alert to all vessels in the vicinity.",
+        "Request aerial or satellite support for damage assessment.",
+        "Engage government environmental agency for emergency intervention.",
+        "Begin immediate documentation for legal and insurance purposes.",
+        "Activate mutual-aid agreement with neighbouring conservation teams.",
+        "Establish an on-site incident command post without delay.",
     ]
     if risk_score <= 10:
         return random.choice(stable)
@@ -156,9 +156,14 @@ async def analyze_audio(file: UploadFile = File(...)):
     """
     Detect boat engine noise from a short WAV audio chunk.
 
-    Boat engines produce dominant low-frequency mechanical energy in the
-    20–200 Hz band.  We compute the energy ratio of that band vs the
-    total spectrum; if it exceeds the threshold we flag boat sound.
+    Boat engines produce strong, tonal low-frequency energy (fundamentals
+    20–180 Hz) with a low spectral flatness (i.e. concentrated peaks, not
+    spread-out noise).  We require ALL three conditions to fire:
+      1. The chunk has meaningful energy (not silence or near-silence).
+      2. 20–180 Hz band contains ≥45 % of total spectral energy.
+      3. Spectral flatness of the full spectrum is low (< 0.12),
+         meaning the energy is tonal/peaked rather than flat/noisy.
+    This prevents mic hiss, speech, fan noise, and AC hum from triggering.
     """
     contents = await file.read()
     log.info(f"[AUDIO] Received chunk: {len(contents):,} bytes")
@@ -174,20 +179,49 @@ async def analyze_audio(file: UploadFile = File(...)):
 
         data = data.astype(np.float32)
 
-        # FFT magnitude spectrum
+        # ── Gate 1: minimum energy (ignore silence / near-silence) ──────────
+        rms = float(np.sqrt(np.mean(data ** 2)))
+        # For 16-bit PCM values will be in ~[-32768, 32767] range;
+        # for float WAV they're in [-1, 1].  Normalise to float range.
+        if data.dtype == np.float32 and np.max(np.abs(data)) > 1.0:
+            data = data / 32768.0
+            rms  = float(np.sqrt(np.mean(data ** 2)))
+
+        RMS_FLOOR = 0.005   # must have at least 0.5 % of full-scale RMS
+        if rms < RMS_FLOOR:
+            log.info(f"[AUDIO] Too quiet (rms={rms:.5f}) — no detection")
+            return {"boat_sound_detected": False}
+
+        # ── FFT magnitude spectrum ───────────────────────────────────────────
         spectrum = np.abs(np.fft.rfft(data))
         freqs    = np.fft.rfftfreq(len(data), d=1.0 / sample_rate)
 
-        # Energy in boat-engine band (20–200 Hz)
-        boat_mask  = (freqs >= 20) & (freqs <= 200)
+        # ── Gate 2: low-frequency energy ratio (20–180 Hz) ──────────────────
+        boat_mask    = (freqs >= 20) & (freqs <= 180)
         total_energy = float(np.sum(spectrum ** 2)) + 1e-9
         boat_energy  = float(np.sum(spectrum[boat_mask] ** 2))
         ratio        = boat_energy / total_energy
 
-        log.debug(f"[AUDIO] Low-freq energy ratio = {ratio:.4f} (threshold = 0.15)")
+        ENERGY_THRESHOLD = 0.45   # 45 % of energy must be in the engine band
+        log.debug(f"[AUDIO] Low-freq energy ratio = {ratio:.4f} (threshold = {ENERGY_THRESHOLD})")
 
-        # Threshold: >15 % low-freq energy → boat sound present
-        boat_sound_detected = bool(ratio > 0.15)
+        if ratio < ENERGY_THRESHOLD:
+            log.info(f"[AUDIO] Insufficient low-freq energy (ratio={ratio:.4f}) — no detection")
+            return {"boat_sound_detected": False}
+
+        # ── Gate 3: spectral flatness (tonal vs noisy) ───────────────────────
+        # Flatness = geometric_mean(spectrum) / arithmetic_mean(spectrum)
+        # Near 0 → tonal (engine peaks); near 1 → flat noise / voice.
+        eps = 1e-9
+        spec_pos     = spectrum + eps
+        log_mean     = float(np.mean(np.log(spec_pos)))
+        arith_mean   = float(np.mean(spec_pos))
+        flatness     = float(np.exp(log_mean) / arith_mean)
+
+        FLATNESS_MAX = 0.12   # must be tonal — if flat, it's noise/voice
+        log.debug(f"[AUDIO] Spectral flatness = {flatness:.4f} (max = {FLATNESS_MAX})")
+
+        boat_sound_detected = bool(flatness < FLATNESS_MAX)
 
     except Exception as e:
         # If the audio cannot be decoded, default to no detection
